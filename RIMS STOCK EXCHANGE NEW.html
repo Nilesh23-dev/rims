@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Indian Stock Market</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #0fa4af;
+            color: white;
+            margin: 0;
+            padding: 20px;
+        }
+        h1, h2, h3 {
+            margin-bottom: 10px;
+            color: gold;
+        }
+        #stocks, #portfolio {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .stock {
+            padding: 15px;
+            background: #024950;
+            border-radius: 10px;
+            box-shadow: 2px 4px 10px rgba(0, 0, 0, 0.2);
+            width: 180px;
+            font-size: 14px;
+            text-align: center;
+            transition: transform 0.3s;
+            color: white;
+        }
+        .stock:hover {
+            transform: scale(1.05);
+        }
+        button {
+            margin-top: 8px;
+            padding: 8px 12px;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 14px;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+        .buy-button {
+            background-color: #27ae60;
+            color: white;
+        }
+        .buy-button:hover {
+            background-color: #219150;
+        }
+        .sell-button {
+            background-color: #c0392b;
+            color: white;
+        }
+        .sell-button:hover {
+            background-color: #a93226;
+        }
+        #fluctuateButton {
+            background-color: #f39c12;
+            font-size: 16px;
+            padding: 10px 20px;
+            color: white;
+        }
+        #fluctuateButton:hover {
+            background-color: #e67e22;
+        }
+        #fluctuateButton:disabled {
+            background-color: gray;
+            cursor: not-allowed;
+        }
+        #portfolioValue {
+            font-size: 36px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>📈 RIMS STOCK EXCHANGE (RSE)</h1>
+    <h2 id="balance">Balance: ₹10,000</h2>
+    <h3>Select Stocks</h3>
+    <div id="stocks"></div>
+    
+    <h2>Portfolio</h2>
+    <div id="portfolio"></div>
+    <h3>Total Portfolio Value: ₹<span id="portfolioValue" style="background-color:darkblue;"></span></h3>
+
+    <h2>Stock Market Fluctuations 🎡</h2>
+    <button id="fluctuateButton" onclick="fluctuateMarket()">Trigger Market Fluctuations</button>
+    <p id="fluctuationResult" style="color:rgb(71, 93, 71);font-size: 25pt;background-color:yellow"></p>
+    <h3>Attempts Left: <span id="attempts">3</span></h3>
+
+    <script>
+        let stocks = [
+            { symbol: "RELIANCE", name: "Reliance Industries", price: 2600, owned: 0 },
+            { symbol: "TCS", name: "Tata Consultancy Services", price: 3800, owned: 0 },
+            { symbol: "INFY", name: "Infosys", price: 1600, owned: 0 },
+            { symbol: "HDFCBANK", name: "HDFC Bank", price: 1500, owned: 0 },
+            { symbol: "ITC", name: "ITC Ltd.", price: 430, owned: 0 },
+            { symbol: "HINDUNILVR", name: "Hindustan Unilever", price: 2500, owned: 0 },
+            { symbol: "BAJAJFINANCE", name: "Bajaj Finance", price: 7200, owned: 0 },
+            { symbol: "LT", name: "Larsen & Toubro", price: 3100, owned: 0 },
+            { symbol: "ASIANPAINT", name: "Asian Paints", price: 3100, owned: 0 },
+            { symbol: "TITAN", name: "Titan Company", price: 3200, owned: 0 }
+        ];
+        
+        let balance = 10000;
+        let attempts = 3;
+        let previousPortfolioValue = 0;
+
+        document.addEventListener("DOMContentLoaded", () => {
+            renderStocks();
+            updateBalance();
+            setInterval(updateStockPrices, 2000); // Automatic updates every 2 seconds
+        });
+
+        function renderStocks() {
+            let stockContainer = document.getElementById("stocks");
+            stockContainer.innerHTML = "";
+            stocks.forEach((stock, index) => {
+                stockContainer.innerHTML += `
+                    <div class="stock">
+                        <h3>${stock.name} (${stock.symbol})</h3>
+                        <p>Price: ₹${stock.price.toFixed(2)}</p>
+                        <p>Owned: ${stock.owned}</p>
+                        <button class="buy-button" onclick="buyStock(${index})">Buy</button>
+                    </div>
+                `;
+            });
+        }
+
+        function renderPortfolio() {
+            let portfolioContainer = document.getElementById("portfolio");
+            portfolioContainer.innerHTML = "";
+            let totalValue = 0;
+            stocks.forEach((stock, index) => {
+                if (stock.owned > 0) {
+                    let stockValue = stock.owned * stock.price;
+                    totalValue += stockValue;
+                    portfolioContainer.innerHTML += `
+                        <div class="stock">
+                            <h3>${stock.name} (${stock.symbol})</h3>
+                            <p>Owned: ${stock.owned}</p>
+                            <p>Total Value: ₹${stockValue.toFixed(2)}</p>
+                            <button class="sell-button" onclick="sellStock(${index})">Sell</button>
+                        </div>
+                    `;
+                }
+            });
+            document.getElementById("portfolioValue").innerText = totalValue.toFixed(2);
+        }
+
+        function updateBalance() {
+            document.getElementById("balance").innerText = `Balance: ₹${balance}`;
+        }
+
+        function buyStock(index) {
+            let stock = stocks[index];
+            if (balance >= stock.price) {
+                stock.owned++;
+                balance -= stock.price;
+                renderStocks();
+                renderPortfolio();
+                updateBalance();
+            } else {
+                alert("Not enough balance!");
+            }
+        }
+
+        function sellStock(index) {
+            let stock = stocks[index];
+            if (stock.owned > 0) {
+                stock.owned--;
+                balance += stock.price;
+                renderStocks();
+                renderPortfolio();
+                updateBalance();
+            } else {
+                alert("You do not own any of this stock!");
+            }
+        }
+
+        function updateStockPrices() {
+            let percentageChanges = [0.5, 1, 1.5, -0.5, -1, -1.5];
+
+            stocks.forEach(stock => {
+                let percentageChange = percentageChanges[Math.floor(Math.random() * percentageChanges.length)];
+                let change = (stock.price * percentageChange) / 100;
+                stock.price += change;
+            });
+
+            renderStocks();
+            renderPortfolio();
+        }
+
+        function fluctuateMarket() {
+            if (attempts > 0) {
+                let oldPortfolioValue = parseFloat(document.getElementById("portfolioValue").innerText);
+                let fluctuationRates = [5, 10, 15, -5, -10, -15];
+                
+                stocks.forEach(stock => {
+                    let percentageChange = fluctuationRates[Math.floor(Math.random() * fluctuationRates.length)];
+                    let change = (stock.price * percentageChange) / 100;
+                    stock.price += change;
+                });
+
+                renderStocks();
+                renderPortfolio();
+                
+                let newPortfolioValue = parseFloat(document.getElementById("portfolioValue").innerText);
+                let changePercentage = ((newPortfolioValue - oldPortfolioValue) / oldPortfolioValue) * 100;
+                document.getElementById("fluctuationResult").innerText = `Portfolio changed by ${changePercentage.toFixed(2)}%`;
+
+                attempts--;
+                document.getElementById("attempts").innerText = attempts;
+                if (attempts === 0) document.getElementById("fluctuateButton").disabled = true;
+            }
+        }
+    </script>
+</body>
+</html>
